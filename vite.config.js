@@ -11,7 +11,7 @@ export default defineConfig({
       external: [
         "react-router-dom",
         "js-cookie",
-        "date-fns", // Added date-fns
+        // Removed 'date-fns' from here to force bundling
         // Add any other packages here if they cause similar 'failed to resolve import' errors
       ],
     },
