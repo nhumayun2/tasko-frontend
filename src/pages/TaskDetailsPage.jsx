@@ -3,9 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import Header from "../components/Header";
 import TaskModal from "../components/TaskModal";
+import CongratsModal from "../components/CongratsModal"; // Import the new modal
 import { fetchTaskById, updateTaskApi, deleteTaskApi } from "../api/tasks";
 import { useAuth } from "../context/AuthContext";
 
+// ... (SVG icon components remain the same) ...
 const EditIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -105,6 +107,7 @@ function TaskDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCongratsModalOpen, setIsCongratsModalOpen] = useState(false); // New state for congrats modal
   const [modalLoading, setModalLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState("");
 
@@ -148,6 +151,10 @@ function TaskDetailsPage() {
       setTask(updatedTask);
       setCurrentStatus(updatedTask.status);
       setIsEditModalOpen(false);
+      // Check if the status was changed to 'Done' and open the congrats modal
+      if (updatedTask.status === "Done") {
+        setIsCongratsModalOpen(true);
+      }
       return true;
     } catch (err) {
       setError(err.message);
@@ -184,8 +191,17 @@ function TaskDetailsPage() {
     }
 
     if (updateSuccessful) {
-      navigate("/dashboard");
+      if (currentStatus !== "Done") {
+        // Only navigate if it's not 'Done'
+        navigate("/dashboard");
+      }
     }
+  };
+
+  // Close congrats modal and navigate to dashboard
+  const handleCloseCongratsModal = () => {
+    setIsCongratsModalOpen(false);
+    navigate("/dashboard");
   };
 
   if (loading) {
@@ -340,6 +356,10 @@ function TaskDetailsPage() {
         onSave={handleUpdateTask}
         taskToEdit={task}
         loading={modalLoading}
+      />
+      <CongratsModal
+        isOpen={isCongratsModalOpen}
+        onClose={handleCloseCongratsModal}
       />
     </div>
   );
