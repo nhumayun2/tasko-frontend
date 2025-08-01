@@ -4,12 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import Header from "../components/Header";
 import TaskCard from "../components/TaskCard";
 import TaskModal from "../components/TaskModal";
-import {
-  fetchTasks,
-  createTaskApi,
-  updateTaskApi,
-  deleteTaskApi,
-} from "../api/tasks";
+import { fetchTasks, updateTaskApi, deleteTaskApi } from "../api/tasks";
 
 const AddNewTaskIcon = () => (
   <svg
@@ -41,6 +36,7 @@ function DashboardPage() {
 
   // IMPORTANT: This list MUST match the backend enum and TaskModal dropdown
   const figmaCategories = [
+    "All Task",
     "General",
     "Arts and Craft",
     "Nature",
@@ -78,9 +74,21 @@ function DashboardPage() {
     }
   }, [isAuthenticated, authLoading]);
 
-  const handleOpenCreateModal = () => {
-    setTaskToEdit(null);
-    setIsModalOpen(true);
+  const handleOpenNewTaskPage = () => {
+    navigate("/tasks/new");
+  };
+
+  const handleOpenEditModal = async (taskId) => {
+    setModalLoading(true);
+    try {
+      const task = await fetchTaskById(taskId);
+      setTaskToEdit(task);
+      setIsModalOpen(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setModalLoading(false);
+    }
   };
 
   const handleCloseModal = () => {
@@ -98,9 +106,6 @@ function DashboardPage() {
         setTasks(
           tasks.map((task) => (task._id === savedTask._id ? savedTask : task))
         );
-      } else {
-        savedTask = await createTaskApi(taskData);
-        setTasks([...tasks, savedTask]);
       }
       handleCloseModal();
     } catch (err) {
@@ -111,9 +116,6 @@ function DashboardPage() {
   };
 
   const handleDeleteTask = async (taskId) => {
-    // Replaced window.confirm with a custom modal/dialog for better UX and consistency
-    // For this example, I'll use a simple alert as a placeholder for a custom modal.
-    // In a real app, you'd replace this with a proper modal component.
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this task?"
     );
@@ -153,52 +155,55 @@ function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-100 font-inter flex flex-col">
       <Header />
-      {/* Main content area, adjusted for the overlapping container */}
-      <div className="relative flex-grow -mt-6 md:-mt-6 z-20">
-        {" "}
-        {/* Negative margin to pull it up over the header */}
-        <div className="container mx-auto p-6 bg-white rounded-t-3xl shadow-lg min-h-[calc(100vh-10rem)] md:min-h-[calc(100vh-16rem)]">
-          {" "}
-          {/* Adjusted min-h for header overlap */}
-          <div className="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0 md:space-x-4">
-            {/* Select Task Category Filter */}
-            <div className="w-full md:w-1/3">
-              <select
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                {figmaCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
+      <div className="relative flex-grow -mt-8 md:-mt-6 z-20">
+        <div className="container mx-auto p-6 bg-white rounded-3xl shadow-lg min-h-[calc(100vh-10rem)] md:min-h-[calc(100vh-16rem)]">
+          {/* Main layout row */}
+          <div className="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0">
+            {/* Left side: "All Task List" text */}
+            <h2 className="text-2xl font-bold text-gray-800">All Task List</h2>
 
-            {/* All Task (Status) Filter */}
-            <div className="w-full md:w-1/3">
-              <select
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-              >
-                {figmaStatuses.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Right side: Filters and Add New Task button */}
+            <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+              {/* Select Task Category Filter */}
+              <div className="w-full md:w-auto">
+                <select
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                  {figmaCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <button
-              onClick={handleOpenCreateModal}
-              className="w-full md:w-auto flex items-center justify-center px-6 py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition duration-300 shadow-md"
-            >
-              <AddNewTaskIcon />
-              Add New Task
-            </button>
+              {/* All Task (Status) Filter */}
+              <div className="w-full md:w-auto">
+                <select
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                >
+                  {figmaStatuses.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                onClick={handleOpenNewTaskPage}
+                className="w-full md:w-auto flex items-center justify-center px-6 py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition duration-300 shadow-md"
+              >
+                <AddNewTaskIcon />
+                Add New Task
+              </button>
+            </div>
           </div>
+
           {error && (
             <div
               className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4"
@@ -227,7 +232,7 @@ function DashboardPage() {
                 No Task is Available yet, Please Add your New Task
               </p>
               <button
-                onClick={handleOpenCreateModal}
+                onClick={handleOpenNewTaskPage}
                 className="px-6 py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition duration-300 shadow-md"
               >
                 Add Your New Task
@@ -246,7 +251,6 @@ function DashboardPage() {
           )}
         </div>
       </div>
-
       <TaskModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}

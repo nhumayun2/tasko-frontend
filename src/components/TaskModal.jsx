@@ -23,12 +23,11 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("To Do");
   const [priority, setPriority] = useState("Medium");
-  const [category, setCategory] = useState("General"); // Default category
+  const [category, setCategory] = useState("General");
   const [points, setPoints] = useState(0);
   const [dueDate, setDueDate] = useState("");
   const [error, setError] = useState(null);
 
-  // IMPORTANT: This list MUST match the backend enum and dashboard filter
   const figmaCategories = [
     "General",
     "Arts and Craft",
@@ -39,6 +38,13 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
     "Meditation",
     "Collaborative Task",
   ];
+  const allValidStatuses = [
+    "To Do",
+    "In Progress",
+    "Done",
+    "Pending",
+    "Ongoing",
+  ];
 
   useEffect(() => {
     if (taskToEdit) {
@@ -46,7 +52,6 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
       setDescription(taskToEdit.description || "");
       setStatus(taskToEdit.status || "To Do");
       setPriority(taskToEdit.priority || "Medium");
-      // Ensure the category from taskToEdit is one of the figmaCategories, or default to 'General'
       setCategory(
         figmaCategories.includes(taskToEdit.category)
           ? taskToEdit.category
@@ -88,7 +93,7 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
       description,
       status,
       priority,
-      category, // Use selected category
+      category,
       points: Number(points),
       dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
     };
@@ -98,13 +103,13 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4 font-inter">
-      <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md relative">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-50 p-4 font-inter">
+      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden w-full max-w-lg relative p-8 md:p-12">
         <button onClick={onClose} className="absolute top-4 right-4">
           <CloseIcon />
         </button>
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          {taskToEdit ? "Edit Task" : "Add New Task"}
+        <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+          Edit Task
         </h2>
 
         {error && (
@@ -116,7 +121,7 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
               htmlFor="title"
@@ -127,14 +132,13 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
             <input
               type="text"
               id="title"
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
               placeholder="Task title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
             />
           </div>
-
           <div>
             <label
               htmlFor="description"
@@ -144,14 +148,13 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
             </label>
             <textarea
               id="description"
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
               placeholder="Task description"
               rows="3"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             ></textarea>
           </div>
-
           <div>
             <label
               htmlFor="status"
@@ -161,18 +164,17 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
             </label>
             <select
               id="status"
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
             >
-              <option value="To Do">To Do</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Ongoing">Ongoing</option>
-              <option value="Pending">Pending</option>
-              <option value="Done">Done</option>
+              {allValidStatuses.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
             </select>
           </div>
-
           <div>
             <label
               htmlFor="priority"
@@ -182,7 +184,7 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
             </label>
             <select
               id="priority"
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
             >
@@ -191,7 +193,6 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
               <option value="High">High</option>
             </select>
           </div>
-
           <div>
             <label
               htmlFor="category"
@@ -199,9 +200,9 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
             >
               Category
             </label>
-            <select // Changed to select dropdown
+            <select
               id="category"
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             >
@@ -212,7 +213,6 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
               ))}
             </select>
           </div>
-
           <div>
             <label
               htmlFor="points"
@@ -223,13 +223,13 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
             <input
               type="number"
               id="points"
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="0"
               value={points}
               onChange={(e) => setPoints(e.target.value)}
               min="0"
             />
           </div>
-
           <div>
             <label
               htmlFor="dueDate"
@@ -240,18 +240,18 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
             <input
               type="date"
               id="dueDate"
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder="mm/dd/yyyy"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
             />
           </div>
-
           <button
             type="submit"
             className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-600 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
           >
-            {loading ? "Saving..." : taskToEdit ? "Update Task" : "Add Task"}
+            {loading ? "Saving..." : "Update Task"}
           </button>
         </form>
       </div>

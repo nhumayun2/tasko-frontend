@@ -11,10 +11,11 @@ import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import TaskDetailsPage from "./pages/TaskDetailsPage";
 import SpinWheelPage from "./pages/SpinWheelPage";
-import ProfilePage from "./pages/ProfilePage"; // Import ProfilePage
+import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import NewTaskPage from "./pages/NewTaskPage"; // Import the new page
 
 import "./index.css";
 
@@ -51,6 +52,14 @@ function App() {
           }
         />
         <Route
+          path="/tasks/new" // New route for adding a task
+          element={
+            <ProtectedRoute>
+              <NewTaskPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/tasks/:id"
           element={
             <ProtectedRoute>
@@ -67,7 +76,7 @@ function App() {
           }
         />
         <Route
-          path="/profile" // New route for profile page
+          path="/profile"
           element={
             <ProtectedRoute>
               <ProfilePage />

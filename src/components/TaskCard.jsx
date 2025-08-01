@@ -1,24 +1,7 @@
 import React from "react";
 import { format } from "date-fns";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-
-// Placeholder for a simple task icon SVG
-const TaskIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-8 w-8 text-green-600"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-    />
-  </svg>
-);
+import { useNavigate } from "react-router-dom";
+import TaskDetailsLogo from "../assets/TaskDetailsLogo.png"; // Import the new logo
 
 // Placeholder for Calendar icon SVG
 const CalendarIcon = () => (
@@ -57,8 +40,7 @@ const TrashIcon = () => (
 );
 
 function TaskCard({ task, onDelete }) {
-  // Removed onViewDetails prop as it's handled internally
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -76,24 +58,32 @@ function TaskCard({ task, onDelete }) {
   };
 
   const handleCardClick = () => {
-    navigate(`/tasks/${task._id}`); // Navigate to task details page
+    navigate(`/tasks/${task._id}`);
   };
 
   return (
     <div
-      className="bg-white rounded-xl shadow-md p-6 flex flex-col justify-between cursor-pointer hover:shadow-lg transition duration-200 border-l-4 border-green-500"
-      onClick={handleCardClick} // Click entire card to view details
+      className="bg-white rounded-xl shadow-md p-6 flex flex-col justify-between cursor-pointer hover:shadow-lg transition duration-200"
+      onClick={handleCardClick}
     >
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center">
-          <TaskIcon />
+          <img
+            src={TaskDetailsLogo} // Use the imported image
+            alt="Task Icon"
+            className="h-8 w-8 mr-2"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "https://placehold.co/32x32/14b8a6/ffffff?text=T";
+            }} // Fallback
+          />
           <h3 className="text-xl font-semibold text-gray-800 ml-2">
             {task.title}
           </h3>
         </div>
         <button
           onClick={(e) => {
-            e.stopPropagation(); // Prevent card click from firing
+            e.stopPropagation();
             onDelete(task._id);
           }}
           className="p-2 rounded-full hover:bg-gray-100 transition duration-200"
