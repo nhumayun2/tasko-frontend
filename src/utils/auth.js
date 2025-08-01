@@ -1,7 +1,6 @@
-import Cookies from "js-cookie";
-
 const TOKEN_NAME = "mern_task_token";
 const USER_INFO_NAME = "mern_task_user_info";
+import Cookies from "js-cookie";
 
 // Set the token and user info in cookies
 export const setAuthData = (token, user, rememberMe = false) => {

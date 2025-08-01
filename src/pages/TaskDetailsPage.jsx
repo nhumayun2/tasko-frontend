@@ -91,6 +91,13 @@ const TaskoBigIcon = () => (
   </svg>
 );
 
+const formatDateSimple = (dateString) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "Invalid Date";
+  return format(date, "PPP");
+};
+
 function TaskDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -99,7 +106,7 @@ function TaskDetailsPage() {
   const [error, setError] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [modalLoading, setModalLoading] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState(""); // New state for dropdown
+  const [currentStatus, setCurrentStatus] = useState("");
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -123,7 +130,7 @@ function TaskDetailsPage() {
       try {
         const fetchedTask = await fetchTaskById(id);
         setTask(fetchedTask);
-        setCurrentStatus(fetchedTask.status); // Initialize currentStatus from fetched task
+        setCurrentStatus(fetchedTask.status);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -139,19 +146,18 @@ function TaskDetailsPage() {
     try {
       const updatedTask = await updateTaskApi(id, updatedData);
       setTask(updatedTask);
-      setCurrentStatus(updatedTask.status); // Update dropdown state after successful save
-      setIsEditModalOpen(false); // Close modal after successful update
-      return true; // Indicate success
+      setCurrentStatus(updatedTask.status);
+      setIsEditModalOpen(false);
+      return true;
     } catch (err) {
       setError(err.message);
-      return false; // Indicate failure
+      return false;
     } finally {
       setModalLoading(false);
     }
   };
 
   const handleDeleteTask = async () => {
-    // Using window.confirm as a placeholder. In a real app, replace with a custom modal.
     if (window.confirm("Are you sure you want to delete this task?")) {
       try {
         await deleteTaskApi(id);
@@ -165,21 +171,18 @@ function TaskDetailsPage() {
   const handleSubmitChanges = async () => {
     setError(null);
     if (!task) {
-      navigate("/dashboard"); // If task somehow not loaded, just go back
+      navigate("/dashboard");
       return;
     }
 
     let updateSuccessful = true;
-    // Check if status has actually changed
     if (currentStatus !== task.status) {
-      // Only update status if it's different. Pass all task data to satisfy backend validation.
       updateSuccessful = await handleUpdateTask({
         ...task,
         status: currentStatus,
       });
     }
 
-    // Navigate to dashboard only if update was successful or no update was needed
     if (updateSuccessful) {
       navigate("/dashboard");
     }
@@ -236,10 +239,8 @@ function TaskDetailsPage() {
   return (
     <div className="min-h-screen bg-gray-100 font-inter flex flex-col">
       <Header />
-      {/* Main content area, adjusted for the overlapping container */}
       <div className="relative flex-grow -mt-8 md:-mt-6 z-20">
         <div className="container mx-auto p-6 bg-white rounded-3xl shadow-lg min-h-[calc(100vh-10rem)] md:min-h-[calc(100vh-16rem)]">
-          {/* Task Details Header, Edit, and Back Buttons */}
           <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
             <h2 className="text-3xl font-bold text-gray-800 mb-4 sm:mb-0">
               Task Details
@@ -261,9 +262,7 @@ function TaskDetailsPage() {
               </button>
             </div>
           </div>
-          <hr className="border-t border-gray-300 mb-6" />{" "}
-          {/* Horizontal line */}
-          {/* Task Icon, Title, and Description */}
+          <hr className="border-t border-gray-300 mb-6" />
           <div className="flex items-start mb-6">
             <TaskoBigIcon className="mt-0" />
             <div className="ml-4 flex-grow">
@@ -275,24 +274,17 @@ function TaskDetailsPage() {
               </p>
             </div>
           </div>
-          {/* End Date, Status, Priority, Category Section - Using flex for precise alignment */}
           <div className="flex flex-col md:flex-row items-start md:items-center mb-6">
-            {/* Left Section: End Date & Priority */}
-            {/* Added ml-16 to align with task title text on md screens and up */}
             <div className="flex flex-col space-y-4 pr-2 md:pr-4 md:ml-16">
               <div className="flex items-center text-gray-700">
                 <CalendarIcon />
                 <span className="font-semibold mr-2">End Date:</span>
-                <span>
-                  {task.dueDate ? format(new Date(task.dueDate), "PPP") : "N/A"}
-                </span>
+                <span>{formatDateSimple(task.dueDate)}</span>
               </div>
             </div>
 
-            {/* Vertical Separator Line (visible on md and up) */}
             <div className="hidden md:block w-px bg-gray-300 h-16 mx-4"></div>
 
-            {/* Right Section: Status & Category */}
             <div className="flex flex-col space-y-4 pl-0 md:pl-4">
               <div className="flex items-center text-gray-700">
                 <span
@@ -312,10 +304,9 @@ function TaskDetailsPage() {
             </label>
             <select
               id="changeStatus"
-              // Changed width to w-full on small screens and w-1/4 on medium screens and up
               className="w-full md:w-1/4 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={currentStatus} // Bind to new local state
-              onChange={(e) => setCurrentStatus(e.target.value)} // Only update local state
+              value={currentStatus}
+              onChange={(e) => setCurrentStatus(e.target.value)}
               disabled={modalLoading}
             >
               {allValidStatuses.map((s) => (
@@ -334,7 +325,7 @@ function TaskDetailsPage() {
               Delete Task
             </button>
             <button
-              onClick={handleSubmitChanges} // New handler for submit button
+              onClick={handleSubmitChanges}
               className="flex items-center px-6 py-3 bg-[#60E5AE] text-black rounded-lg font-semibold hover:bg-green-600 transition duration-300 shadow-md"
             >
               Submit
