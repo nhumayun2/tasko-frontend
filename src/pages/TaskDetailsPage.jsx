@@ -2,12 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import Header from "../components/Header";
-import TaskModal from "../components/TaskModal";
-import CongratsModal from "../components/CongratsModal"; // Import the new modal
+// Remove: import TaskModal from "../components/TaskModal";
+import CongratsModal from "../components/CongratsModal";
 import { fetchTaskById, updateTaskApi, deleteTaskApi } from "../api/tasks";
 import { useAuth } from "../context/AuthContext";
 
-// ... (SVG icon components remain the same) ...
 const EditIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -106,8 +105,7 @@ function TaskDetailsPage() {
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isCongratsModalOpen, setIsCongratsModalOpen] = useState(false); // New state for congrats modal
+  const [isCongratsModalOpen, setIsCongratsModalOpen] = useState(false);
   const [modalLoading, setModalLoading] = useState(false);
   const [currentStatus, setCurrentStatus] = useState("");
 
@@ -150,8 +148,6 @@ function TaskDetailsPage() {
       const updatedTask = await updateTaskApi(id, updatedData);
       setTask(updatedTask);
       setCurrentStatus(updatedTask.status);
-      setIsEditModalOpen(false);
-      // Check if the status was changed to 'Done' and open the congrats modal
       if (updatedTask.status === "Done") {
         setIsCongratsModalOpen(true);
       }
@@ -192,16 +188,18 @@ function TaskDetailsPage() {
 
     if (updateSuccessful) {
       if (currentStatus !== "Done") {
-        // Only navigate if it's not 'Done'
         navigate("/dashboard");
       }
     }
   };
 
-  // Close congrats modal and navigate to dashboard
   const handleCloseCongratsModal = () => {
     setIsCongratsModalOpen(false);
     navigate("/dashboard");
+  };
+
+  const handleEditTaskClick = () => {
+    navigate(`/tasks/edit/${id}`); // Navigate to the new EditTaskPage
   };
 
   if (loading) {
@@ -263,7 +261,7 @@ function TaskDetailsPage() {
             </h2>
             <div className="flex space-x-4">
               <button
-                onClick={() => setIsEditModalOpen(true)}
+                onClick={handleEditTaskClick}
                 className="flex items-center px-4 py-2 bg-[#FFAB00]/10 text-black rounded-lg font-light hover:bg-yellow-600 transition duration-300 shadow-md"
               >
                 <EditIcon />
@@ -349,14 +347,6 @@ function TaskDetailsPage() {
           </div>
         </div>
       </div>
-
-      <TaskModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        onSave={handleUpdateTask}
-        taskToEdit={task}
-        loading={modalLoading}
-      />
       <CongratsModal
         isOpen={isCongratsModalOpen}
         onClose={handleCloseCongratsModal}

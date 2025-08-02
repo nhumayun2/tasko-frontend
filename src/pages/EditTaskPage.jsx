@@ -1,10 +1,9 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 import Header from "../components/Header";
 import { useAuth } from "../context/AuthContext";
-import { createTaskApi } from "../api/tasks";
-import { format } from "date-fns";
-import CollaborativeTaskModal from "../components/CollaborativeTaskModal"; // Import the new modal
+import { fetchTaskById, updateTaskApi } from "../api/tasks";
 
 const BackIcon = () => (
   <svg
@@ -23,16 +22,11 @@ const BackIcon = () => (
   </svg>
 );
 
-const formatDateSimple = (dateString) => {
-  if (!dateString) return "N/A";
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return "Invalid Date";
-  return format(date, "PPP");
-};
-
-const AddNewTaskPage = () => {
-  const { user } = useAuth();
+const EditTaskPage = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [task, setTask] = useState(null); // The original task data
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("To Do");
@@ -41,9 +35,7 @@ const AddNewTaskPage = () => {
   const [points, setPoints] = useState(0);
   const [dueDate, setDueDate] = useState("");
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
-  const [collaborators, setCollaborators] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const figmaCategories = [
     "General",
@@ -63,25 +55,36 @@ const AddNewTaskPage = () => {
     "Ongoing",
   ];
 
-  const handleCategoryChange = (e) => {
-    const newCategory = e.target.value;
-    setCategory(newCategory);
-    // Open the collaborator modal if the category is "Collaborative Task"
-    if (newCategory === "Collaborative Task") {
-      setIsCollabModalOpen(true);
-    } else {
-      setCollaborators([]); // Reset collaborators if category changes
-    }
-  };
-
-  const handleSaveCollaborators = (selectedFriends) => {
-    setCollaborators(selectedFriends);
-    setIsCollabModalOpen(false);
-  };
-
-  const handleRemoveCollaborator = (friendId) => {
-    setCollaborators(collaborators.filter((id) => id !== friendId));
-  };
+  useEffect(() => {
+    const getTaskToEdit = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const fetchedTask = await fetchTaskById(id);
+        setTask(fetchedTask);
+        setTitle(fetchedTask.title || "");
+        setDescription(fetchedTask.description || "");
+        setStatus(fetchedTask.status || "To Do");
+        setPriority(fetchedTask.priority || "Medium");
+        setCategory(
+          figmaCategories.includes(fetchedTask.category)
+            ? fetchedTask.category
+            : "General"
+        );
+        setPoints(fetchedTask.points || 0);
+        setDueDate(
+          fetchedTask.dueDate
+            ? format(new Date(fetchedTask.dueDate), "yyyy-MM-dd")
+            : ""
+        );
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getTaskToEdit();
+  }, [id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -94,7 +97,7 @@ const AddNewTaskPage = () => {
       return;
     }
 
-    const taskData = {
+    const updatedTaskData = {
       title,
       description,
       status,
@@ -102,12 +105,11 @@ const AddNewTaskPage = () => {
       category,
       points: Number(points),
       dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
-      collaborators: category === "Collaborative Task" ? collaborators : [], // Include collaborators if it's a collaborative task
     };
 
     try {
-      await createTaskApi(taskData);
-      navigate("/dashboard");
+      await updateTaskApi(id, updatedTaskData);
+      navigate("/dashboard"); // Go back to dashboard after update
     } catch (err) {
       setError(err.message);
     } finally {
@@ -115,17 +117,43 @@ const AddNewTaskPage = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 font-inter flex flex-col">
+        <Header />
+        <div className="relative flex-grow -mt-8 md:-mt-6 z-20 flex items-center justify-center">
+          <p className="text-xl text-gray-700">Loading task data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center font-inter p-4">
+        <h1 className="text-4xl font-bold text-red-600 mb-4">Error: {error}</h1>
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="px-6 py-3 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition duration-300"
+        >
+          Back to Dashboard
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 font-inter flex flex-col">
       <Header />
       <div className="relative flex-grow -mt-8 md:-mt-6 z-20">
         <div className="container mx-auto p-6 bg-white rounded-3xl shadow-lg min-h-[calc(100vh-10rem)] md:min-h-[calc(100vh-16rem)]">
+          {/* Page Header and Back button */}
           <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
             <h2 className="text-3xl font-bold text-gray-800 mb-4 sm:mb-0">
-              Add New Task
+              Edit Task
             </h2>
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate(`/tasks/${id}`)} // Back to task details page
               className="flex items-center px-4 py-2 bg-[#60E5AE] text-black rounded-lg font-light hover:bg-green-600 transition duration-300 shadow-md"
             >
               <BackIcon />
@@ -178,7 +206,6 @@ const AddNewTaskPage = () => {
               ></textarea>
             </div>
 
-            {/* Two-column layout for Status and Priority */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label
@@ -220,7 +247,6 @@ const AddNewTaskPage = () => {
               </div>
             </div>
 
-            {/* Two-column layout for Category and Points */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label
@@ -233,7 +259,7 @@ const AddNewTaskPage = () => {
                   id="category"
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
                   value={category}
-                  onChange={handleCategoryChange}
+                  onChange={(e) => setCategory(e.target.value)}
                 >
                   {figmaCategories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -241,30 +267,6 @@ const AddNewTaskPage = () => {
                     </option>
                   ))}
                 </select>
-                {/* Display selected collaborators if the category is 'Collaborative Task' */}
-                {category === "Collaborative Task" &&
-                  collaborators.length > 0 && (
-                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                      <p className="font-semibold text-gray-800 mb-2">
-                        Selected Collaborators:
-                      </p>
-                      <ul className="list-disc list-inside">
-                        {/* You'll need to fetch and display the friend's username here if you don't have it already.
-                      For now, we'll just show the count. */}
-                        {collaborators.map((id) => (
-                          <li key={id} className="text-sm text-gray-600">
-                            {id}
-                            <button
-                              onClick={() => handleRemoveCollaborator(id)}
-                              className="ml-2 text-red-500 hover:text-red-700"
-                            >
-                              X
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
               </div>
               <div>
                 <label
@@ -307,18 +309,13 @@ const AddNewTaskPage = () => {
               className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-600 transition duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
             >
-              {loading ? "Adding..." : "Add Task"}
+              {loading ? "Saving..." : "Update Task"}
             </button>
           </form>
         </div>
       </div>
-      <CollaborativeTaskModal
-        isOpen={isCollabModalOpen}
-        onClose={() => setIsCollabModalOpen(false)}
-        onSave={handleSaveCollaborators}
-      />
     </div>
   );
 };
 
-export default AddNewTaskPage;
+export default EditTaskPage;

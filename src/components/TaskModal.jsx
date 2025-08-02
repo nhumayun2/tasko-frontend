@@ -164,7 +164,7 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
             </label>
             <select
               id="status"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
             >
@@ -184,7 +184,7 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
             </label>
             <select
               id="priority"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
             >
@@ -202,7 +202,7 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
             </label>
             <select
               id="category"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             >
@@ -223,7 +223,7 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
             <input
               type="number"
               id="points"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
               placeholder="0"
               value={points}
               onChange={(e) => setPoints(e.target.value)}
@@ -240,7 +240,7 @@ function TaskModal({ isOpen, onClose, onSave, taskToEdit, loading }) {
             <input
               type="date"
               id="dueDate"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200"
               placeholder="mm/dd/yyyy"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}

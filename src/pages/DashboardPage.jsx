@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import Header from "../components/Header";
+import { useAuth } from "../context/AuthContext";
 import TaskCard from "../components/TaskCard";
 import TaskModal from "../components/TaskModal";
-import { fetchTasks, updateTaskApi, deleteTaskApi } from "../api/tasks";
+import {
+  fetchTasks,
+  updateTaskApi,
+  deleteTaskApi,
+  fetchTaskById,
+} from "../api/tasks";
 
 const AddNewTaskIcon = () => (
   <svg
@@ -19,8 +24,25 @@ const AddNewTaskIcon = () => (
   </svg>
 );
 
+const TeamIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-5 w-5 mr-2"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M17 20v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2m3-4a4 4 0 11-8 0 4 4 0 018 0zm11 0a4 4 0 11-8 0 4 4 0 018 0z"
+    />
+  </svg>
+);
+
 function DashboardPage() {
-  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [tasks, setTasks] = useState([]);
@@ -30,11 +52,9 @@ function DashboardPage() {
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
 
-  // Filter states
   const [selectedCategory, setSelectedCategory] = useState("All Task");
   const [selectedStatus, setSelectedStatus] = useState("All Task");
 
-  // IMPORTANT: This list MUST match the backend enum and TaskModal dropdown
   const figmaCategories = [
     "All Task",
     "General",
@@ -44,9 +64,7 @@ function DashboardPage() {
     "Sport",
     "Friends",
     "Meditation",
-    "Collaborative Task",
   ];
-  // Statuses from Figma's "All Task" filter dropdown, explicitly excluding 'Collaborative Task'
   const figmaStatuses = [
     "All Task",
     "Ongoing",
@@ -56,20 +74,21 @@ function DashboardPage() {
     "In Progress",
   ];
 
+  const getTasks = async () => {
+    setLoadingTasks(true);
+    setError(null);
+    try {
+      const fetchedTasks = await fetchTasks();
+      setTasks(fetchedTasks);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoadingTasks(false);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
-      const getTasks = async () => {
-        setLoadingTasks(true);
-        setError(null);
-        try {
-          const fetchedTasks = await fetchTasks();
-          setTasks(fetchedTasks);
-        } catch (err) {
-          setError(err.message);
-        } finally {
-          setLoadingTasks(false);
-        }
-      };
       getTasks();
     }
   }, [isAuthenticated, authLoading]);
@@ -116,10 +135,10 @@ function DashboardPage() {
   };
 
   const handleDeleteTask = async (taskId) => {
-    const confirmDelete = window.confirm(
+    const deleteConfirmed = window.confirm(
       "Are you sure you want to delete this task?"
     );
-    if (confirmDelete) {
+    if (deleteConfirmed) {
       try {
         await deleteTaskApi(taskId);
         setTasks(tasks.filter((task) => task._id !== taskId));
@@ -157,43 +176,43 @@ function DashboardPage() {
       <Header />
       <div className="relative flex-grow -mt-8 md:-mt-6 z-20">
         <div className="container mx-auto p-6 bg-white rounded-3xl shadow-lg min-h-[calc(100vh-10rem)] md:min-h-[calc(100vh-16rem)]">
-          {/* Main layout row */}
-          <div className="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0">
-            {/* Left side: "All Task List" text */}
-            <h2 className="text-2xl font-bold text-gray-800">All Task List</h2>
+          <div className="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0 md:space-x-4">
+            <div className="w-full md:w-1/3">
+              <select
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                {figmaCategories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            {/* Right side: Filters and Add New Task button */}
-            <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-              {/* Select Task Category Filter */}
-              <div className="w-full md:w-auto">
-                <select
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                  {figmaCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div className="w-full md:w-1/3">
+              <select
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+              >
+                {figmaStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-              {/* All Task (Status) Filter */}
-              <div className="w-full md:w-auto">
-                <select
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                >
-                  {figmaStatuses.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
+            <div className="flex space-x-2">
+              <button
+                onClick={() => navigate("/collaborative-tasks")}
+                className="w-full md:w-auto flex items-center justify-center px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition duration-300 shadow-md"
+              >
+                <TeamIcon />
+                Collaborate
+              </button>
               <button
                 onClick={handleOpenNewTaskPage}
                 className="w-full md:w-auto flex items-center justify-center px-6 py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition duration-300 shadow-md"
@@ -245,6 +264,7 @@ function DashboardPage() {
                   key={task._id}
                   task={task}
                   onDelete={handleDeleteTask}
+                  onViewDetails={() => handleOpenEditModal(task._id)}
                 />
               ))}
             </div>

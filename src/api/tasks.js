@@ -30,6 +30,26 @@ export const fetchTasks = async () => {
   }
 };
 
+// New function to fetch all collaborative tasks for the authenticated user
+export const fetchCollaborativeTasks = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks/collaborative`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || "Failed to fetch collaborative tasks"
+      );
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching collaborative tasks:", error);
+    throw error;
+  }
+};
+
 // Create a new task
 export const createTaskApi = async (taskData) => {
   try {

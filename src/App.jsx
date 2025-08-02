@@ -15,7 +15,11 @@ import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
-import NewTaskPage from "./pages/NewTaskPage"; // Import the new page
+import NewTaskPage from "./pages/NewTaskPage";
+import EditTaskPage from "./pages/EditTaskPage";
+import AddFriendsPage from "./pages/AddFriendsPage";
+import FriendsPage from "./pages/FriendsPage";
+import CollaborativeTaskPage from "./pages/CollaborativeTaskPage"; // Import the new page
 
 import "./index.css";
 
@@ -52,7 +56,7 @@ function App() {
           }
         />
         <Route
-          path="/tasks/new" // New route for adding a task
+          path="/tasks/new"
           element={
             <ProtectedRoute>
               <NewTaskPage />
@@ -64,6 +68,14 @@ function App() {
           element={
             <ProtectedRoute>
               <TaskDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tasks/edit/:id"
+          element={
+            <ProtectedRoute>
+              <EditTaskPage />
             </ProtectedRoute>
           }
         />
@@ -80,6 +92,30 @@ function App() {
           element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/friends/add"
+          element={
+            <ProtectedRoute>
+              <AddFriendsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/friends/list"
+          element={
+            <ProtectedRoute>
+              <FriendsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/collaborative-tasks" // New route for the collaborative tasks page
+          element={
+            <ProtectedRoute>
+              <CollaborativeTaskPage />
             </ProtectedRoute>
           }
         />
